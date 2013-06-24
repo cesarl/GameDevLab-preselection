@@ -13,25 +13,26 @@ public:
 	 Vector3d rot = Vector3d(0.0f, 0.0f, 0.0f)) :
     dim_(dim),
     pos_(pos),
-    rot_(rot)
+    rot_(rot),
+	min_(Vector3d(-360, -360, -360)),
+	max_(Vector3d(360, 360, 360))
   {}
 
   ~Cube(){}
-  void			draw()
+  void			draw(bool inside = true)
   {
     glPushMatrix();
 
-	glTranslatef(pos_.x, pos_.y, pos_.z);
 	
-	glTranslatef(dim_.x / 2.0f, dim_.y / 2.0f, dim_.z / 2.0f);
+	//glTranslatef(dim_.x / 2.0f, dim_.y / 2.0f, dim_.z / 2.0f);
 
 	glRotatef(rot_.x, 1.0f, 0.0f, 0.0f);
     glRotatef(rot_.y, 0.0f, 1.0f, 0.0f);
     glRotatef(rot_.z, 0.0f, 0.0f, 1.0f);
 
-    glTranslatef(- dim_.x / 2.0f, - dim_.y / 2.0f, - dim_.z / 2.0f);
-
-	
+    //glTranslatef(- dim_.x / 2.0f, - dim_.y / 2.0f, - dim_.z / 2.0f);
+	if (inside)
+		glTranslatef(pos_.x, pos_.y, pos_.z);
 
     glBegin(GL_QUADS);
 
@@ -76,25 +77,27 @@ public:
     glVertex3f(dim_.x, 0.0f, dim_.z);
     glEnd();
 
-    glPopMatrix();
-	glPushMatrix();
+   // glPopMatrix();
+	//glPushMatrix();
 
 
-	glTranslatef(dim_.x / 2.0f, dim_.y / 2.0f,  dim_.z / 2.0f);
+	//glTranslatef(dim_.x / 2.0f, dim_.y / 2.0f,  dim_.z / 2.0f);
 
-    glRotatef(rot_.x, 1.0f, 0.0f, 0.0f);
-    glRotatef(rot_.y, 0.0f, 1.0f, 0.0f);
-    glRotatef(rot_.z, 0.0f, 0.0f, 1.0f);
+ //   glRotatef(rot_.x, 1.0f, 0.0f, 0.0f);
+ //   glRotatef(rot_.y, 0.0f, 1.0f, 0.0f);
+ //   glRotatef(rot_.z, 0.0f, 0.0f, 1.0f);
 
 	t_iter it;
 	it = this->list_.begin();
+	glTranslatef(dim_.x, 0.0f, 0.0f);
 	while (it != this->list_.end())
 	{
-		(*it)->draw();
+		
+		(*it)->draw(false);
 		++it;
 	}
 
-	glTranslatef(- dim_.x / 2.0f, - dim_.y / 2.0f, - dim_.z / 2.0f);
+//	glTranslatef(- dim_.x / 2.0f, - dim_.y / 2.0f, - dim_.z / 2.0f);
 
 
 	glPopMatrix();
@@ -105,7 +108,7 @@ public:
 	this->list_.push_back(c);
   }
 
-  void			rotate(const Vector3d &v)
+  bool			rotate(const Vector3d &v)
   {
 		this->rot_ += v;
 		if (this->rot_.x > 360.0f)
@@ -114,6 +117,27 @@ public:
 			this->rot_.y = 0.0f;
 		if (this->rot_.z > 360.0f)
 			this->rot_.z = 0.0f;
+	  if (rot_.z < min_.z)
+	  {
+		  rot_.z = min_.z;
+		  return false;
+	  }
+	  if (rot_.z > max_.z)
+	  {
+		  rot_.z = max_.z;
+		  return false;
+	  }
+	return true;
+  }
+
+  void setMin(const Vector3d & v)
+  {
+  this->min_ = v;
+  }
+
+  void setMax(const Vector3d & v)
+  {
+  this->max_ = v;
   }
 
   void			move(const Vector3d &v)
@@ -124,6 +148,8 @@ private:
   Vector3d		dim_;
   Vector3d		pos_;
   Vector3d		rot_;
+  Vector3d min_;
+  Vector3d max_;
   std::vector<Cube*> list_;
 
   typedef std::vector<Cube*>::iterator t_iter;

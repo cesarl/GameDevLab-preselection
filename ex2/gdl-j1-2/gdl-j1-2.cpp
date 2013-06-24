@@ -42,23 +42,53 @@ void myFinger(SDL_Event &ev)
 	//finger3.draw();
 	//poignet.draw();
 	//avantPoignet.draw();
-	bras.draw();
+	bras.draw(true);
 
 	if (ev.type == SDL_KEYDOWN)
 		{
 			switch(ev.key.keysym.sym)
 			{
-			case SDLK_LEFT:
+			case SDLK_KP7:
 				bras.rotate(Vector3d(0.0f, 0.0f, 1.0f));
 				break;
-			case SDLK_RIGHT:
+			case SDLK_KP4:
 				bras.rotate(Vector3d(0.0f, 0.0f, -1.0f));
 				break;
-			case SDLK_UP:
-				avantPoignet.rotate(Vector3d(0.0f, 0.0f, 1.0f));
+			case SDLK_KP8:
+				if (!avantPoignet.rotate(Vector3d(0.0f, 0.0f, 1.0f)))
+					bras.rotate(Vector3d(0.0f, 0.0f, 1.0f));
 				break;
-			case SDLK_DOWN:
-				avantPoignet.rotate(Vector3d(0.0f, 0.0f, -1.0f));
+			case SDLK_KP5:
+				if (!avantPoignet.rotate(Vector3d(0.0f, 0.0f, -1.0f)))
+					bras.rotate(Vector3d(0.0f, 0.0f, -1.0f));
+				break;
+			case SDLK_KP9:
+				if(!poignet.rotate(Vector3d(0.0f, 0.0f, 1.0f)))
+					if (!avantPoignet.rotate(Vector3d(0.0f, 0.0f, 1.0f)))
+						bras.rotate(Vector3d(0.0f, 0.0f, 1.0f));
+				break;
+			case SDLK_KP6:
+				if(!poignet.rotate(Vector3d(0.0f, 0.0f, -1.0f)))
+					if (!avantPoignet.rotate(Vector3d(0.0f, 0.0f, -1.0f)))
+						bras.rotate(Vector3d(0.0f, 0.0f, -1.0f));
+				break;
+			case SDLK_q:
+				finger1.rotate(Vector3d(0.0f, 0.0f, -1.0f));
+				break;
+			case SDLK_a:
+				finger1.rotate(Vector3d(0.0f, 0.0f, 1.0f));
+				break;
+			case SDLK_w:
+				finger2.rotate(Vector3d(0.0f, 0.0f, -1.0f));
+				break;
+			case SDLK_s:
+				finger2.rotate(Vector3d(0.0f, 0.0f, 1.0f));
+				break;
+			case SDLK_e:
+				finger3.rotate(Vector3d(0.0f, 0.0f, -1.0f));
+				break;
+			case SDLK_d:
+				finger3.rotate(Vector3d(0.0f, 0.0f, 1.0f));
 				break;
 			default:
 				break;
@@ -70,18 +100,26 @@ void myFinger(SDL_Event &ev)
 int _tmain(int argc, _TCHAR* argv[])
 {
 	Context &c = Context::getInstance();
-	Cube cube1(Vector3d(1.0f, 1.0f, 1.0f),
-				Vector3d(0.0f, 0.0f, -10.0f),
-				Vector3d(0.0f, 0.0f, 0.0f));
 
-	Cube cube2(Vector3d(0.3f, 0.3f, 0.3f),
-				Vector3d(0.4f, 1.0f, -9.7f),
-				Vector3d(0.0f, 0.0f, 0.0f));
 
 	SDL_Event ev;
-	Vector3d move;
+
 	Grid grid(40, 40, Vector3d(30.0f, 0.0f, 30.0f), Vector3d(-15.0f, 0.0f, -30.0f));
 	int current = 0;
+
+
+	finger1.setMin(Vector3d(0,0,-90));
+	finger1.setMax(Vector3d(0,0,90));
+	finger2.setMin(Vector3d(0,0,-90));
+	finger2.setMax(Vector3d(0,0,90));
+	finger3.setMin(Vector3d(0,0,-90));
+	finger3.setMax(Vector3d(0,0,90));
+
+	poignet.setMin(Vector3d(0,0,-90));
+	poignet.setMax(Vector3d(0,0,90));
+
+	avantPoignet.setMin(Vector3d(0,0,-40));
+	avantPoignet.setMax(Vector3d(0,0,40));
 
 	poignet.push(&finger1);
 	poignet.push(&finger2);
@@ -95,77 +133,15 @@ int _tmain(int argc, _TCHAR* argv[])
 	while (c.run(ev))
 	{
 		SDL_PollEvent(&ev);
-		/*while(SDL_PollEvent(&ev))
-		{*/
-		move = Vector3d(0.0f, 0.0f, 0.0f);
+			
 		
-		if (ev.type == SDL_KEYDOWN)
-		{
-			switch(ev.key.keysym.sym)
-			{
-			case SDLK_LEFT:
-				move.x -= 0.5f;
-				break;
-			case SDLK_RIGHT:
-				move.x +=0.5f;
-				break;
-			default:
-				break;
-			}
-			switch(ev.key.keysym.sym)
-			{
-			case SDLK_UP:
-				move.z -= 0.5f;
-				break;
-			case SDLK_DOWN:
-				move.z += 0.5f;
-				break;
-			default:
-				break;
-			}
-		}
-
-		else if (ev.type == SDL_KEYUP)
-		{
-				switch(ev.key.keysym.sym)
-				{
-				case SDLK_LEFT:
-					move.x = 0.0f;
-					break;
-				case SDLK_RIGHT:
-					move.x = 0.0f;
-					break;
-				default:
-					break;
-				}
-				switch(ev.key.keysym.sym)
-				{
-				case SDLK_UP:
-					move.z = 0.0f;
-					break;
-				case SDLK_DOWN:
-					move.z = 0;
-					break;
-				default:
-					break;
-				}
-		}
-
-		cube1.move(move);
-		cube2.move(move);
+		myFinger(ev);
 
 		if (ev.type == SDL_QUIT || ev.key.keysym.sym == SDLK_ESCAPE)
 		{
 			c.stop();
 		}
 	
-	
-		/*}*/
-		cube2.draw();
-		cube1.draw();
-		grid.draw();
-		cube1.rotate(Vector3d(0.0f, 2.0f, 0.0f));
-		cube2.rotate(Vector3d(3.0f, 2.0f, 1.0f));
 		c.endOfLoop();
 	}
 	c.uninit();
